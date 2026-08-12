@@ -1,0 +1,66 @@
+services:
+  backend:
+    container_name: reportes-backend
+    build: 
+      context: .
+      dockerfile: autenticacion/Dockerfile
+    image: patrick190/reportes-backend:latest
+    expose:
+    - "8000"
+    env_file:
+      - .env
+    networks:
+      - reportes
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+  frontend:
+    container_name: reportes-frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: patrick190/reportes-frontend:latest
+    networks:
+      - reportes
+    depends_on:
+      - backend
+    restart: always
+    expose:
+      - "80"
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+        reservations:
+          memory: 64M
+
+  db-reportes:
+    image: postgres:15-alpine
+    container_name: reportes-db
+    ports:
+      - "5438:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    env_file:
+      - .env
+    volumes:
+      - reportes-db:/var/lib/postgresql/data
+    networks:
+      - reportes
+
+
+networks:
+  reportes:
+    external: true
+    name: proxy-network
+  
+
+volumes:
+  reportes-db:

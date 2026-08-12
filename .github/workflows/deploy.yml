@@ -1,0 +1,52 @@
+name: Deploy to VPS - Softvar
+
+on:
+    push:
+        branches: [ "main" ]
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+    
+        steps:
+
+        -   name: Montar web
+            uses: actions/checkout@v4
+        
+        -   name: Login en docker hub
+            uses: docker/login-action@v3
+            with:
+                username: ${{ secrets.DOCKER_USERNAME }}
+                password: ${{ secrets.DOCKER_PASSWORD }}
+
+        -   name: Contruir backend
+            uses: docker/build-push-action@v5
+            with:
+                context: .
+                push: true
+                file: ./backend/Dockerfile
+                tags: ${{ secrets.DOCKER_USERNAME}}/reportes-backend:latest
+
+        -   name: Construir frontend
+            uses: docker/build-push-action@v5
+            with:
+                context: ./frontend
+                push: true
+                file: ./frontend/Dockerfile
+                tags: ${{ secrets.DOCKER_USERNAME }}/reportes-frontend:latest
+
+        -   name: Entrar y desplegar en VPS
+            uses: appleboy/ssh-action@master
+            with:
+                host: ${{ secrets.VPS_HOST }}
+                username: ${{ secrets.VPS_USERNAME }}
+                key: ${{ secrets.VPS_PASSWORD }}
+
+                script: |
+                    cd ~/JuiciosReportivos
+                    git fetch
+                    git checkout main
+                    git pull origin main
+                    docker compose pull
+                    docker compose up -d --build
+                    docker image prune -f
