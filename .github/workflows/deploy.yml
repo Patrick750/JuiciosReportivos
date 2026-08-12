@@ -1,4 +1,4 @@
-name: Deploy to VPS - Softvar
+name: Deploy to VPS - Jucios Reportivos
 
 on:
     push:
