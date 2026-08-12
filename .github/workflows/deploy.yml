@@ -24,7 +24,7 @@ jobs:
             with:
                 context: .
                 push: true
-                file: ./backend/Dockerfile
+                file: ./autenticacion/Dockerfile
                 tags: ${{ secrets.DOCKER_USERNAME}}/reportes-backend:latest
 
         -   name: Construir frontend
